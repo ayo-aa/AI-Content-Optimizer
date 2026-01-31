@@ -1,0 +1,17 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Data + outputs
+data/raw/
+data/features/
+outputs/
+
+# OS
+.DS_Store
+**/.DS_Store
+
+# IDE
+.vscode/
