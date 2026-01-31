@@ -1,3 +1,4 @@
+import wave
 import argparse
 import os
 import subprocess
@@ -32,16 +33,42 @@ def run_ffmpeg_extract_wav(video_path: str, wav_path: str, sr: int) -> None:
     if p.returncode != 0:
         raise RuntimeError(p.stderr.decode("utf-8", errors="ignore"))
 
+def load_wav_stdlib(path: str):
+    with wave.open(path, "rb") as wf:
+        sr = wf.getframerate()
+        n_channels = wf.getnchannels()
+        sampwidth = wf.getsampwidth()
+        n_frames = wf.getnframes()
+        audio_bytes = wf.readframes(n_frames)
+
+    if sampwidth == 1:
+        audio = np.frombuffer(audio_bytes, dtype=np.uint8).astype(np.float32)
+        audio = (audio - 128.0) / 128.0
+    elif sampwidth == 2:
+        audio = np.frombuffer(audio_bytes, dtype=np.int16).astype(np.float32)
+        audio = audio / 32768.0
+    elif sampwidth == 4:
+        audio = np.frombuffer(audio_bytes, dtype=np.int32).astype(np.float32)
+        audio = audio / 2147483648.0
+    else:
+        raise RuntimeError(f"Unsupported WAV sample width: {sampwidth}")
+
+    if n_channels > 1:
+        audio = audio.reshape(-1, n_channels).mean(axis=1)
+
+    return torch.from_numpy(audio), sr  # [N], sr
+
 
 def load_audio_windows(video_path: str, cfg: FeatConfig, duration_sec: float, T: int):
     with tempfile.TemporaryDirectory() as td:
         wav_path = os.path.join(td, "tmp.wav")
         run_ffmpeg_extract_wav(video_path, wav_path, cfg.audio_sr)
 
-        wav, sr = torchaudio.load(wav_path)  # [1, N]
+        wav, sr = load_wav_stdlib(wav_path)  # [N]
         if sr != cfg.audio_sr:
-            wav = torchaudio.functional.resample(wav, sr, cfg.audio_sr)
-        wav = wav.squeeze(0)  # [N]
+            wav = torchaudio.functional.resample(
+                wav.unsqueeze(0), sr, cfg.audio_sr
+            ).squeeze(0)
 
     mel = torchaudio.transforms.MelSpectrogram(
         sample_rate=cfg.audio_sr,
@@ -88,14 +115,13 @@ def build_visual_encoder(device: str):
     model.heads = nn.Identity()
     model.eval().to(device)
 
-    # Use weights normalization
-    norm = weights.transforms()
-    tfm = transforms.Compose([
-        transforms.ToPILImage(),
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        norm.transforms[-1],
-    ])
+    preprocess = weights.transforms()  # callable preset
+
+    def tfm(frame_rgb_np):
+        # frame_rgb_np is an RGB numpy array from OpenCV conversion
+        img = transforms.ToPILImage()(frame_rgb_np)
+        return preprocess(img)
+
     return model, tfm
 
 
