@@ -36,6 +36,9 @@ The result is a tighter cut that stays intelligible (no mid-sentence starts) and
 ## Demo
 
 This project can be hosted as a Hugging Face Space so anyone can use it via a link (no cloning required).  
+
+Link: https://huggingface.co/spaces/ayo5886/AI-content-optimizer 
+
 If you are running locally, see “Run the app”.
 
 ---
