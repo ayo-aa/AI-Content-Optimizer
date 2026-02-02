@@ -1,0 +1,37 @@
+{
+  "talking_head": [
+    "person talking to camera",
+    "selfie video speaking to camera",
+    "vlog style talking head"
+  ],
+  "screen_recording": [
+    "screen recording",
+    "computer screen with software",
+    "phone screen recording"
+  ],
+  "hands_object": [
+    "hands holding an object",
+    "person showing a product in hands",
+    "close up of hands demonstrating something"
+  ],
+  "text_overlay": [
+    "video with text overlay",
+    "subtitles on screen",
+    "big caption text on screen"
+  ],
+  "broll": [
+    "b-roll footage",
+    "cinematic montage",
+    "cutaway shots"
+  ],
+  "outdoors": [
+    "outdoors scene",
+    "street scene",
+    "walking outside"
+  ],
+  "indoor_room": [
+    "indoors room",
+    "office room",
+    "bedroom room"
+  ]
+}

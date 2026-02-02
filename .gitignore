@@ -8,6 +8,11 @@ __pycache__/
 data/raw/
 data/features/
 outputs/
+data/meta/
+data/transcripts/
+data/units/
+data/scores/
+data/vision/
 
 # OS
 .DS_Store
